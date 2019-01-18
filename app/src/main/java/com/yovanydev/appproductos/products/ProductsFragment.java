@@ -13,6 +13,7 @@ import android.view.ViewGroup;
 import android.widget.Toast;
 
 import com.yovanydev.appproductos.R;
+import com.yovanydev.appproductos.di.DependencyProvider;
 import com.yovanydev.appproductos.products.domain.model.Producto;
 
 import java.util.ArrayList;
@@ -26,10 +27,11 @@ public class ProductsFragment extends Fragment implements ProductsMvp.View{
     private RecyclerView rvProductsList;
     private ProductsAdapter mProductsAdapter;
     private SwipeRefreshLayout mSwipeRefreshLayout;
+    private ProductsPresenter mProductsPresenter;
     private View mEmptyView;
     private ProductsAdapter.ProductItemListener mItemListener = new ProductsAdapter.ProductItemListener() {
         @Override
-        public void onProductClick(Producto clickedNote) {
+        public void onProductClick(Producto clickedProduct) {
 
         }
     };
@@ -47,6 +49,12 @@ public class ProductsFragment extends Fragment implements ProductsMvp.View{
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         mProductsAdapter = new ProductsAdapter(new ArrayList<Producto>(0), mItemListener);
+        mProductsPresenter = new ProductsPresenter(
+                DependencyProvider.provideProductsRepository(getActivity()),
+                this
+        );
+
+        setRetainInstance(true);
     }
 
     @Override
@@ -67,6 +75,9 @@ public class ProductsFragment extends Fragment implements ProductsMvp.View{
         return view;
     }
 
+    /**
+     * Configura el swipeRefreshLayout y determina un escuha para detectar el evento Swipe.
+     */
     private void setUpRefreshLayout() {
         mSwipeRefreshLayout.setColorSchemeColors(
                 ContextCompat.getColor(getActivity(), R.color.colorPrimary),
@@ -82,12 +93,16 @@ public class ProductsFragment extends Fragment implements ProductsMvp.View{
         });
     }
 
+    /**
+     * Configura el adaptador en el RecyclerView.
+     */
     private void setUpProductsList() {
         rvProductsList.setAdapter(mProductsAdapter);
         rvProductsList.setHasFixedSize(true);
     }
 
-
+    /*----------------------------------------------------------------------------------------------
+    * Metodos implementados de la Vista - ProductsMvp.view*/
     @Override
     public void showProducts(List<Producto> productos) {
         mProductsAdapter.replaceData(productos);

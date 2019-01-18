@@ -1,6 +1,9 @@
 package com.yovanydev.appproductos.products;
 
 import com.yovanydev.appproductos.data.products.ProductsRepository;
+import com.yovanydev.appproductos.products.domain.model.Producto;
+
+import java.util.List;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
@@ -29,6 +32,37 @@ public class ProductsPresenter  implements ProductsMvp.Presenter{
             mCurrentPage++;
         }
 
-        mProductsRepository.getProducts();
+        mProductsRepository.getProducts(new ProductsRepository.GetProductsCallback() {
+
+            @Override
+            public void onProductsLoaded(List<Producto> productos) {
+                mProductsView.showLoadingState(false);
+                processProducts(productos, reallyReload);
+                isFirstLoad = false;
+            }
+
+            @Override
+            public void onDataNotAvailable(String error) {
+                mProductsView.showLoadingState(false);
+                mProductsView.showLoadMoreIndicator(false);
+                mProductsView.showProductsError(error);
+            }
+
+            private void processProducts(List<Producto> productos, boolean reload) {
+                if (productos.isEmpty()) {
+                    if (reload) mProductsView.showEmptyState();
+                    else mProductsView.showLoadMoreIndicator(false);
+                    mProductsView.allowMoreData(false);
+                }
+                else {
+                    if (reload) mProductsView.showProducts(productos);
+                    else {
+                        mProductsView.showLoadMoreIndicator(false);
+                        mProductsView.showProductsPage(productos);
+                    }
+                    mProductsView.allowMoreData(true);
+                }
+            }
+        });
     }
 }

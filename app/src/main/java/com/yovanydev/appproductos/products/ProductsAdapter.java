@@ -31,9 +31,7 @@ public class ProductsAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
     @NonNull
     @Override
     public RecyclerView.ViewHolder onCreateViewHolder(@NonNull ViewGroup viewGroup, int i) {
-        Context context = viewGroup.getContext();
-        LayoutInflater layoutInflater = LayoutInflater.from(context);
-        View view = layoutInflater.inflate(R.layout.cardview_product, viewGroup, false);
+        View view = LayoutInflater.from(viewGroup.getContext()).inflate(R.layout.cardview_product, viewGroup, false);
         return new ProductsHolder(view, mItemListener);
     }
 
@@ -112,6 +110,6 @@ public class ProductsAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
     }
 
     public interface ProductItemListener {
-        void onProductClick(Producto clickedNote);
+        void onProductClick(Producto clickedProduct);
     }
 }
