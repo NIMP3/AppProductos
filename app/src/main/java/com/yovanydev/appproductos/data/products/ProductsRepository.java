@@ -6,6 +6,7 @@ import android.net.NetworkInfo;
 
 import com.yovanydev.appproductos.data.products.datasource.cloud.ICloudProductsDataSource;
 import com.yovanydev.appproductos.data.products.datasource.memory.IMemoryProductsDataSource;
+import com.yovanydev.appproductos.products.domain.criteria.ProductCriteria;
 import com.yovanydev.appproductos.products.domain.model.Producto;
 
 import java.util.List;
@@ -27,16 +28,18 @@ public class ProductsRepository implements IProductsRepository {
     }
 
     @Override
-    public void getProducts(GetProductsCallback callback) {
+    public void getProducts(GetProductsCallback callback, ProductCriteria criteria) {
+        //Si la memoria esta vacia y no hay recarga
         if (!mMemoryProductsDataSource.mapIsNull() && !mReload) {
-            getProductsFromMemory(callback);
+            getProductsFromMemory(callback, criteria);
             return;
         }
+        //Si la recarga esta activa si no es porque hay datos en memoria
         if (mReload) getProductsFromServer(callback, criteria);
         else {
-            List<Producto> productos = mMemoryProductsDataSource.find();
+            List<Producto> productos = mMemoryProductsDataSource.find(criteria);
             if (productos.size() > 0) callback.onProductsLoaded(productos);
-            else getProductsFromServer(callback);
+            else getProductsFromServer(callback, criteria);
         }
     }
 
@@ -44,15 +47,16 @@ public class ProductsRepository implements IProductsRepository {
      * Obtiene los productos de la memoria
      * @param callback
      */
-    private void getProductsFromMemory(GetProductsCallback callback) {
-        callback.onProductsLoaded(mMemoryProductsDataSource.find());
+    private void getProductsFromMemory(GetProductsCallback callback, ProductCriteria criteria) {
+        callback.onProductsLoaded(mMemoryProductsDataSource.find(criteria));
     }
 
     /**
      * Obtiene los productos del servidor
      * @param callback
+     * @param criteria
      */
-    private void getProductsFromServer(final GetProductsCallback callback) {
+    private void getProductsFromServer(final GetProductsCallback callback, final ProductCriteria criteria) {
         if (!isOnline()) {
             callback.onDataNotAvailable("No hay conexión de red");
             return;
@@ -61,14 +65,14 @@ public class ProductsRepository implements IProductsRepository {
                 new ICloudProductsDataSource.ProductServiceCallback() {
                     @Override
                     public void onLoaded(List<Producto> productos) {
-                        refreshMemoryDataSource(productos);
-                        getProductsFromMemory(callback);
+                        refreshMemoryDataSource(productos); //Refresco la los datos alojados en memoria
+                        getProductsFromMemory(callback, criteria);
                     }
                     @Override
                     public void onError(String error) {
                         callback.onDataNotAvailable(error);
                     }
-                }
+                }, null
         );
     }
 

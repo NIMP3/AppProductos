@@ -1,6 +1,7 @@
 package com.yovanydev.appproductos.data.products.datasource.memory;
 
 import com.google.common.collect.Lists;
+import com.yovanydev.appproductos.products.domain.criteria.ProductCriteria;
 import com.yovanydev.appproductos.products.domain.model.Producto;
 
 import java.util.ArrayList;
@@ -13,9 +14,9 @@ public class MemoryProductsDataSource implements  IMemoryProductsDataSource{
     private static HashMap<String, Producto> mCachedProducts;
 
     @Override
-    public List<Producto> find(ProductoCriteria criteria) {
+    public List<Producto> find(ProductCriteria criteria) {
         ArrayList<Producto> productos = Lists.newArrayList(mCachedProducts.values());
-        return productos;
+        return criteria.match(productos);
     }
 
     @Override

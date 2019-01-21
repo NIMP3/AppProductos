@@ -1,6 +1,8 @@
 package com.yovanydev.appproductos.products;
 
 import com.yovanydev.appproductos.data.products.ProductsRepository;
+import com.yovanydev.appproductos.products.domain.criteria.PagingProductCriteria;
+import com.yovanydev.appproductos.products.domain.criteria.ProductCriteria;
 import com.yovanydev.appproductos.products.domain.model.Producto;
 
 import java.util.List;
@@ -12,6 +14,11 @@ public class ProductsPresenter  implements ProductsMvp.Presenter{
     private final ProductsRepository mProductsRepository;
     private final ProductsMvp.View mProductsView;
 
+    public static final int PRODUCTS_LIMIT = 20;
+    private boolean isFirstLoad = true;
+    private int mCurrentPage = 1;
+
+    ProductCriteria criteria = new PagingProductCriteria(mCurrentPage, PRODUCTS_LIMIT);
 
     public ProductsPresenter(ProductsRepository mProductsRepository, ProductsMvp.View mProductsView) {
         this.mProductsRepository = checkNotNull(mProductsRepository);
@@ -63,6 +70,6 @@ public class ProductsPresenter  implements ProductsMvp.Presenter{
                     mProductsView.allowMoreData(true);
                 }
             }
-        });
+        }, criteria);
     }
 }

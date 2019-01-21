@@ -2,10 +2,12 @@ package com.yovanydev.appproductos.products;
 
 
 import android.os.Bundle;
+import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.support.v4.content.ContextCompat;
 import android.support.v4.widget.SwipeRefreshLayout;
+import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -24,7 +26,7 @@ import java.util.List;
  */
 public class ProductsFragment extends Fragment implements ProductsMvp.View{
 
-    private RecyclerView rvProductsList;
+    private RecyclerView mProductsList;
     private ProductsAdapter mProductsAdapter;
     private SwipeRefreshLayout mSwipeRefreshLayout;
     private ProductsPresenter mProductsPresenter;
@@ -64,7 +66,7 @@ public class ProductsFragment extends Fragment implements ProductsMvp.View{
         View view = inflater.inflate(R.layout.fragment_products, container, false);
 
         //Referencias UI
-        rvProductsList = view.findViewById(R.id.rvProductsList);
+        mProductsList = view.findViewById(R.id.rvProductsList);
         mEmptyView = view.findViewById(R.id.viewNoProducts);
         mSwipeRefreshLayout = view.findViewById(R.id.refreshLayout);
 
@@ -73,6 +75,12 @@ public class ProductsFragment extends Fragment implements ProductsMvp.View{
         setUpRefreshLayout();
 
         return view;
+    }
+
+    @Override
+    public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
+        super.onViewCreated(view, savedInstanceState);
+        if (savedInstanceState == null) mProductsPresenter.loadProducts(false);
     }
 
     /**
@@ -97,8 +105,18 @@ public class ProductsFragment extends Fragment implements ProductsMvp.View{
      * Configura el adaptador en el RecyclerView.
      */
     private void setUpProductsList() {
-        rvProductsList.setAdapter(mProductsAdapter);
-        rvProductsList.setHasFixedSize(true);
+        mProductsList.setAdapter(mProductsAdapter);
+        mProductsList.setHasFixedSize(true);
+
+        final LinearLayoutManager layoutManager = (LinearLayoutManager) mProductsList.getLayoutManager();
+
+        //Se agrega escucha de scroll infinito
+        mProductsList.addOnScrollListener(new InfiniteScrollListener(layoutManager, mProductsAdapter) {
+            @Override
+            public void onLoadMore() {
+                mProductsPresenter.loadProducts(false);
+            }
+        });
     }
 
     /*----------------------------------------------------------------------------------------------
@@ -107,7 +125,7 @@ public class ProductsFragment extends Fragment implements ProductsMvp.View{
     public void showProducts(List<Producto> productos) {
         mProductsAdapter.replaceData(productos);
 
-        rvProductsList.setVisibility(View.VISIBLE);
+        mProductsList.setVisibility(View.VISIBLE);
         mEmptyView.setVisibility(View.GONE);
     }
 
@@ -124,7 +142,7 @@ public class ProductsFragment extends Fragment implements ProductsMvp.View{
 
     @Override
     public void showEmptyState() {
-        rvProductsList.setVisibility(View.GONE);
+        mProductsList.setVisibility(View.GONE);
         mEmptyView.setVisibility(View.VISIBLE);
     }
 

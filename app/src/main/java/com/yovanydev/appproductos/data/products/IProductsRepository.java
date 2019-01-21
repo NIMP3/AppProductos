@@ -1,5 +1,6 @@
 package com.yovanydev.appproductos.data.products;
 
+import com.yovanydev.appproductos.products.domain.criteria.ProductCriteria;
 import com.yovanydev.appproductos.products.domain.model.Producto;
 
 import java.util.List;
@@ -20,6 +21,6 @@ public interface IProductsRepository {
         void onDataNotAvailable(String error);
     }
 
-    void getProducts(GetProductsCallback callback);
+    void getProducts(GetProductsCallback callback, ProductCriteria criteria);
     void refreshProducts();
 }
